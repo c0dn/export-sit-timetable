@@ -13,7 +13,7 @@ pub enum LogLevel {
 pub fn log_to_front(msg: &str, level: LogLevel, app: &AppHandle, with_ts: bool) {
     let msg = if with_ts {
         let now = Local::now();
-        let now_fmt = now.format("%d/%m/%y %H:%M").to_string();
+        let now_fmt = now.format("%d/%m %H:%M:%S").to_string();
         format!("[{now_fmt}] {msg}")
     } else {
         msg.to_string()
@@ -74,13 +74,9 @@ pub fn try_parse_string_to_start_end_dt(
         let end_dt = end_dt.and_local_timezone(Local).unwrap();
         Ok((start_dt, end_dt))
     } else {
-        if input.contains("TBA") {
-           Err("course meeting detail not available, TBA".to_string())
-        } else {
-            Err(format!(
-                "Fail to parse end dt, error: Unknown format, value: {}",
-                input
-            ))
-        }
+        Err(format!(
+            "Fail to parse end dt, error: Unknown format, value: {}",
+            input
+        ))
     }
 }

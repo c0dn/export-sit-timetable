@@ -1,5 +1,5 @@
 {
-  "productName": "export-sit-timetable",
+  "productName": "Timetable exporter",
   "version": "0.1.0",
   "identifier": "com.whyisthisneeded.app",
   "build": {
@@ -11,8 +11,8 @@
   "app": {
     "windows": [
       {
-        "title": "export-sit-timetable",
-        "width": 800,
+        "title": "SIT timetable exporter",
+        "width": 900,
         "height": 600
       }
     ],

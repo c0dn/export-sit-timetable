@@ -6,8 +6,5 @@
   "permissions": [
     "core:default",
     "shell:allow-open"
-  ],
-  "capabilities": [
-    
   ]
 }

@@ -2,6 +2,7 @@ import {render} from "solid-js/web";
 import {Route, Router, RouteSectionProps} from "@solidjs/router";
 import Home from "./Home.tsx";
 import "./App.css"
+import ShowResults from "./ShowResults.tsx";
 
 const App = (props: RouteSectionProps) => {
     return (
@@ -31,6 +32,7 @@ render(() => {
         <>
             <Router root={App}>
                 <Route path="/" component={Home}/>
+                <Route path="/results" component={ShowResults}/>
             </Router>
         </>)
 }, document.getElementById("root") as HTMLElement);

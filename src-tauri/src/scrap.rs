@@ -9,7 +9,7 @@ use futures::StreamExt;
 use scraper::{Html, Selector};
 use std::fmt;
 use std::time::Duration;
-use tauri::AppHandle;
+use tauri::{AppHandle, Url};
 use tokio::time::sleep;
 
 const CALENDER_LINK: &str = "https://in4sit.singaporetech.edu.sg/psc/CSSISSTD_4/EMPLOYEE/SA/c/SA_LEARNER_SERVICES.SSR_SSENRL_LIST.GBL?Page=SSR_SSENRL_LIST&Action=A";
@@ -21,6 +21,7 @@ pub enum ScrapError {
     BrowserError(String),
     NavigationError(String),
     JSException(String),
+    LoginFailed,
     HtmlParseError(String),
     NetworkError,
 }
@@ -28,7 +29,7 @@ pub enum ScrapError {
 impl fmt::Display for ScrapError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let now = Local::now();
-        let now_fmt = now.format("%d/%m/%y %H:%M").to_string();
+        let now_fmt = now.format("%d/%m/%y %H:%M:%S").to_string();
         match self {
             ScrapError::BrowserError(msg) => write!(f, "[{}] Browser Error: {}", now_fmt, msg),
             ScrapError::NavigationError(msg) => {
@@ -38,7 +39,10 @@ impl fmt::Display for ScrapError {
                 write!(f, "[{}] JavaScript Exception: {}", now_fmt, msg)
             }
             ScrapError::NetworkError => write!(f, "[{}] Network Error", now_fmt),
-            ScrapError::HtmlParseError(msg) => write!(f, "[{}] HTML parse: {}", now_fmt, msg),
+            ScrapError::HtmlParseError(msg) => {
+                write!(f, "[{}] HTML Parsing Error: {}", now_fmt, msg)
+            }
+            ScrapError::LoginFailed => write!(f, "[{}] Login Failed", now_fmt),
         }
     }
 }
@@ -123,67 +127,83 @@ pub async fn start_scrap(
             .await?;
     }
     page.wait_for_navigation().await?;
-    log_to_front("User logged in", LogLevel::Info, app, true);
     sleep(Duration::from_secs(2)).await;
-    let mut retry_count = 0;
-    while page.url().await? != Some(CALENDER_LINK.to_string()) && retry_count < 3 {
-        page.goto(CALENDER_LINK).await?;
-        page.wait_for_navigation().await?;
-        sleep(Duration::from_secs(1)).await;
-        retry_count += 1;
-        if retry_count >= 2 {
+    let current_url = page
+        .url()
+        .await?
+        .ok_or(ScrapError::NavigationError("No URL strangely".to_string()))?;
+    let current_url = Url::parse(&current_url)
+        .map_err(|_e| ScrapError::NavigationError("URL malformed".to_string()))?;
+    if current_url.host_str() != Some("in4sit.singaporetech.edu.sg") {
+        log_to_front(
+            "Login failed, Check credentials",
+            LogLevel::Error,
+            app,
+            true,
+        );
+        Err(ScrapError::LoginFailed)
+    } else {
+        log_to_front("User logged in", LogLevel::Info, app, true);
+        let mut retry_count = 0;
+        while page.url().await? != Some(CALENDER_LINK.to_string()) && retry_count < 3 {
+            page.goto(CALENDER_LINK).await?;
+            page.wait_for_navigation().await?;
+            sleep(Duration::from_secs(1)).await;
+            retry_count += 1;
+            if retry_count >= 2 {
+                log_to_front(
+                    "Attempting to load Calender view again",
+                    LogLevel::Warn,
+                    app,
+                    true,
+                );
+            }
+        }
+
+        log_to_front("Loaded Calender view", LogLevel::Info, app, true);
+
+        if options.filter_dropped {
+            page.find_xpath("//*[@id=\"DERIVED_REGFRM1_SA_STUDYLIST_D\"]")
+                .await?
+                .click()
+                .await?;
             log_to_front(
-                "Attempting to load Calender view again",
-                LogLevel::Warn,
+                "Unchecked 'Show Dropped Classes'",
+                LogLevel::Info,
                 app,
                 true,
             );
         }
-    }
 
-    log_to_front("Loaded Calender view", LogLevel::Info, app, true);
+        if options.filter_waitlisted {
+            page.find_xpath("//*[@id=\"DERIVED_REGFRM1_SA_STUDYLIST_W\"]")
+                .await?
+                .click()
+                .await?;
+            log_to_front(
+                "Unchecked 'Show Waitlisted Classes'",
+                LogLevel::Info,
+                app,
+                true,
+            );
+        }
 
-    if options.filter_dropped {
-        page.find_xpath("//*[@id=\"DERIVED_REGFRM1_SA_STUDYLIST_D\"]")
+        page.find_xpath("//*[@id=\"DERIVED_REGFRM1_SA_STUDYLIST_SHOW$14$\"]")
             .await?
             .click()
             .await?;
-        log_to_front(
-            "Unchecked 'Show Dropped Classes'",
-            LogLevel::Info,
-            app,
-            true,
-        );
+        page.wait_for_navigation().await?;
+        sleep(Duration::from_secs(2)).await;
+        log_to_front("Filtering done", LogLevel::Info, app, true);
+        let html = page.content().await?;
+
+        if options.debug_mode {
+            log_to_front("Waiting for browser exit", LogLevel::Debug, app, true);
+            log_to_front("Close the browser to continue", LogLevel::Debug, app, true);
+            let _ = browser.wait().await;
+        }
+        Ok(html)
     }
-
-    if options.filter_waitlisted {
-        page.find_xpath("//*[@id=\"DERIVED_REGFRM1_SA_STUDYLIST_W\"]")
-            .await?
-            .click()
-            .await?;
-        log_to_front(
-            "Unchecked 'Show Waitlisted Classes'",
-            LogLevel::Info,
-            app,
-            true,
-        );
-    }
-
-    page.find_xpath("//*[@id=\"DERIVED_REGFRM1_SA_STUDYLIST_SHOW$14$\"]")
-        .await?
-        .click()
-        .await?;
-    page.wait_for_navigation().await?;
-    sleep(Duration::from_secs(2)).await;
-    log_to_front("Filtering done", LogLevel::Info, app, true);
-    let html = page.content().await?;
-
-    if options.debug_mode {
-        log_to_front("Waiting for browser exit", LogLevel::Debug, app, true);
-        let _ = browser.wait().await;
-    }
-
-    Ok(html)
 }
 
 pub fn extract_timetable_from_html(
@@ -245,7 +265,7 @@ pub fn extract_timetable_from_html(
                     results.skipped_unknown_course_count += 1;
                     None
                 })?;
-            log_to_front(&format!("Parsing {} time table", course_name), LogLevel::Info, app, true);
+            log_to_front(&format!("Parsing {} timetable", course_name), LogLevel::Info, app, true);
             let table_entry_selector = Selector::parse("table.PSLEVEL3GRIDWBO table.PSLEVEL3GRID > tbody").unwrap();
             let course_timetable_node = frag.select(&table_entry_selector)
                 .collect::<Vec<_>>()
@@ -259,12 +279,12 @@ pub fn extract_timetable_from_html(
                     results.errors_present = true;
                     None
                 })?;
+            let mut current_entry_type = EntryType::Lecture;
+            let mut current_section = "ALL".to_string();
             let course_timetable_entries = course_timetable_node
                 .child_elements()
                 .enumerate()
                 .filter_map(|(i, e)| {
-                    let mut current_entry_type = EntryType::Lecture;
-                    let mut current_section = "ALL".to_string();
                     if i != 0 {
                         let inner_row = e.child_elements().collect::<Vec<_>>();
                         let mut location: String = String::new();
@@ -276,7 +296,7 @@ pub fn extract_timetable_from_html(
                                 // parse an Entry type
                                 let text = get_inner_text_from_element(cell);
                                 if !text.is_empty() {
-                                    current_entry_type = match text.as_str(){
+                                    current_entry_type = match text.as_str() {
                                         "Quiz" => EntryType::Quiz,
                                         "Tutorial" => EntryType::Tutorial,
                                         "Laboratory" => EntryType::Lab,
@@ -288,7 +308,7 @@ pub fn extract_timetable_from_html(
                                             log_to_front("Default to 'unknown', continuing...", LogLevel::Warn, app, true);
                                             results.errors_present = true;
                                             EntryType::Unknown
-                                        },
+                                        }
                                     };
                                 }
                             } else if i == 1 {
@@ -318,21 +338,28 @@ pub fn extract_timetable_from_html(
                                 datetime_string.push_str(&dt_str_sec);
                             }
                         }
-                        let (start, end) = try_parse_string_to_start_end_dt(&datetime_string).map_err(|e| {
-                            let e = ScrapError::HtmlParseError(e);
-                            results.errors_present = true;
+                        if datetime_string.contains("TBA") {
+                            log_to_front(&format!("Table entry skipped for {}, meeting info not available", course_name), LogLevel::Warn, app, true);
                             results.skipped_table_entry_count += 1;
-                            log_to_front(&e.to_string(), LogLevel::Error, app, false);
-                            log_to_front(&format!("Table entry skipped for {}, CHECK results", course_name), LogLevel::Error, app, true);
-                        }).ok()?;
-                        Some(TimeTableEntry {
-                            entry_type: current_entry_type,
-                            class_section: current_section,
-                            location,
-                            instructor,
-                            start_datetime: start,
-                            end_datetime: end,
-                        })
+                            None
+                        } else {
+                            let (start, end) = try_parse_string_to_start_end_dt(&datetime_string).map_err(|e| {
+                                let e = ScrapError::HtmlParseError(e);
+                                results.errors_present = true;
+                                results.skipped_table_entry_count += 1;
+                                log_to_front(&e.to_string(), LogLevel::Error, app, false);
+                                log_to_front(&format!("Table entry skipped for {}, CHECK results", course_name), LogLevel::Error, app, true);
+                            }).ok()?;
+                            Some(TimeTableEntry {
+                                entry_type: current_entry_type.clone(),
+                                class_section: current_section.clone(),
+                                location,
+                                instructor,
+                                start_datetime: start,
+                                end_datetime: end,
+                            })
+                        }
+
                     } else {
                         None
                     }
@@ -344,8 +371,6 @@ pub fn extract_timetable_from_html(
             })
         })
         .collect::<Vec<_>>();
-
-    println!("{:?}", course_info);
 
     Ok(results)
 }

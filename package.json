@@ -15,9 +15,11 @@
     "@solidjs/router": "^0.14.3",
     "@tauri-apps/api": ">=2.0.0-rc.0",
     "@tauri-apps/plugin-shell": ">=2.0.0-rc.0",
+    "flowbite": "^2.5.1",
     "solid-js": "^1.7.8"
   },
   "devDependencies": {
+    "@tailwindcss/forms": "^0.5.9",
     "@tauri-apps/cli": ">=2.0.0-rc.0",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.45",
