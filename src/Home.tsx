@@ -12,6 +12,7 @@ function Home() {
     const [debugMode, setDebugMode] = createSignal(false);
     const [filterDropped, setFilterDropped] = createSignal(true);
     const [filterWaitlisted, setFilterWaitlisted] = createSignal(true);
+    const [installedVersion, setInstalledVersion] = createSignal("");
 
     const navigate = useNavigate();
 
@@ -25,6 +26,12 @@ function Home() {
         }).then(r => {
             cleanupFunc = r
         });
+
+        invoke<string>("get_installed_version")
+            .then((version) => {
+                setInstalledVersion(version)
+                invoke("is_update_available")
+            })
     })
 
     onCleanup(() => {
@@ -60,9 +67,9 @@ function Home() {
 
     return (
         <div>
-            <div class="flex min-h-full flex-col justify-center px-6 py-8 lg:px-8">
+            <div class="flex min-h-full flex-col justify-center px-6 py-7">
                 <div class="sm:mx-auto sm:w-full sm:max-w-sm">
-                    <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-white">Enter student
+                    <h2 class="mt-5 text-center text-2xl font-bold leading-9 tracking-tight text-white">Enter student
                         credentials</h2>
                 </div>
 
@@ -113,7 +120,8 @@ function Home() {
                                                class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"/>
                                     </div>
                                     <div class="ml-3 text-sm leading-6">
-                                        <label for="filter-dropped" class="font-medium text-gray-500 mr-1">Filter dropped
+                                        <label for="filter-dropped" class="font-medium text-gray-500 mr-1">Filter
+                                            dropped
                                             modules</label>
                                         <span id="filter-dropped-description" class="text-gray-200"><span
                                             class="sr-only">Filter dropped modules </span>Hide dropped modules</span>
@@ -128,7 +136,8 @@ function Home() {
                                                class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"/>
                                     </div>
                                     <div class="ml-3 text-sm leading-6">
-                                        <label for="filter-waitlist" class="font-medium text-gray-500 mr-1">Filter waitlisted
+                                        <label for="filter-waitlist" class="font-medium text-gray-500 mr-1">Filter
+                                            waitlisted
                                             modules</label>
                                         <span id="filter-waitlisted-description" class="text-gray-200"><span
                                             class="sr-only">Filter waitlisted modules </span>Hide waitlisted modules</span>
@@ -155,26 +164,28 @@ function Home() {
                             {latestLogMessage() && (
                                 <p class="text-white text-sm">
                                     {latestLogMessage()?.level == 1 ? (
-                                        <span class="text-white p-2 inline-flex items-center gap-x-1.5 rounded-md px-1.5 py-0.5 text-sm/5 font-medium sm:text-xs/5 forced-colors:outline bg-blue-500/15 group-data-[hover]:bg-blue-500/25 dark:text-blue-400 dark:group-data-[hover]:bg-blue-500/25">
+                                            <span
+                                                class="text-white p-2 inline-flex items-center gap-x-1.5 rounded-md px-1.5 py-0.5 text-sm/5 font-medium sm:text-xs/5 forced-colors:outline bg-blue-500/15 group-data-[hover]:bg-blue-500/25 dark:text-blue-400 dark:group-data-[hover]:bg-blue-500/25">
                                             INFO
                                         </span>
-                                    ):
-                                    latestLogMessage()?.level == 2 ? (
-                                        <span class="text-white p-2 inline-flex items-center gap-x-1.5 rounded-md px-1.5 py-0.5 text-sm/5 font-medium sm:text-xs/5 forced-colors:outline bg-amber-400/20 group-data-[hover]:bg-amber-400/30 dark:bg-amber-400/10 dark:text-amber-400 dark:group-data-[hover]:bg-amber-400/15">
+                                        ) :
+                                        latestLogMessage()?.level == 2 ? (
+                                                <span
+                                                    class="text-white p-2 inline-flex items-center gap-x-1.5 rounded-md px-1.5 py-0.5 text-sm/5 font-medium sm:text-xs/5 forced-colors:outline bg-amber-400/20 group-data-[hover]:bg-amber-400/30 dark:bg-amber-400/10 dark:text-amber-400 dark:group-data-[hover]:bg-amber-400/15">
                                             WARN
                                         </span>
-                                    ):
-                                    latestLogMessage()?.level == 3 ? (
-                                        <span
-                                            class="inline-flex p-2 text-white items-center gap-x-1.5 rounded-md px-1.5 py-0.5 text-sm/5 font-medium sm:text-xs/5 forced-colors:outline bg-red-500/15 group-data-[hover]:bg-red-500/25 dark:bg-red-500/10 dark:text-red-400 dark:group-data-[hover]:bg-red-500/20">
+                                            ) :
+                                            latestLogMessage()?.level == 3 ? (
+                                                <span
+                                                    class="inline-flex p-2 text-white items-center gap-x-1.5 rounded-md px-1.5 py-0.5 text-sm/5 font-medium sm:text-xs/5 forced-colors:outline bg-red-500/15 group-data-[hover]:bg-red-500/25 dark:bg-red-500/10 dark:text-red-400 dark:group-data-[hover]:bg-red-500/20">
                                             ERROR
                                         </span>
-                                    ): latestLogMessage()?.level == 0 ? (
-                                        <span
-                                            class="inline-flex p-2 text-white items-center gap-x-1.5 rounded-md px-1.5 py-0.5 text-sm/5 font-medium sm:text-xs/5 forced-colors:outline bg-emerald-500/15 group-data-[hover]:bg-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-400 dark:group-data-[hover]:bg-emerald-500/20">
+                                            ) : latestLogMessage()?.level == 0 ? (
+                                                <span
+                                                    class="inline-flex p-2 text-white items-center gap-x-1.5 rounded-md px-1.5 py-0.5 text-sm/5 font-medium sm:text-xs/5 forced-colors:outline bg-emerald-500/15 group-data-[hover]:bg-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-400 dark:group-data-[hover]:bg-emerald-500/20">
                                             DEBUG
                                         </span>
-                                    ) : null}
+                                            ) : null}
 
                                     {latestLogMessage()?.message}
                                 </p>
@@ -208,6 +219,10 @@ function Home() {
                     </form>
                 </div>
             </div>
+            <div class="text-gray-400 px-7 mt-3 w-full flex items-end">
+                <span class="ml-auto">Version {installedVersion()}</span>
+            </div>
+
         </div>
     );
 }

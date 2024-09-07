@@ -52,21 +52,28 @@ pub struct ScrapResult {
     pub errors_present: bool,
 }
 
+#[derive(Deserialize, Debug, Clone)]
+pub struct GithubLatestReleaseRes {
+    pub tag_name: String,
+}
+
 impl Into<Vec<Event>> for CourseInfo {
     fn into(self) -> Vec<Event> {
         let name = self.course_name.clone();
-        self.table_entries.into_iter().map(|e| {
-            let summary = format!("{} - {} - {:?}", name, e.class_section, e.entry_type);
-            let description_header = "Profs\n";
-            let description = format!("{}{}", description_header, e.instructors.join("\n"));
-            Event::new()
-                .summary(&summary)
-                .starts(e.start_datetime.to_utc())
-                .ends(e.end_datetime.to_utc())
-                .location(e.location.as_str())
-                .description(&description)
-                .done()
-        })
+        self.table_entries
+            .into_iter()
+            .map(|e| {
+                let summary = format!("{} - {} - {:?}", name, e.class_section, e.entry_type);
+                let description_header = "Profs\n";
+                let description = format!("{}{}", description_header, e.instructors.join("\n"));
+                Event::new()
+                    .summary(&summary)
+                    .starts(e.start_datetime.to_utc())
+                    .ends(e.end_datetime.to_utc())
+                    .location(e.location.as_str())
+                    .description(&description)
+                    .done()
+            })
             .collect()
     }
 }
