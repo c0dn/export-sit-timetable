@@ -209,7 +209,7 @@ pub async fn start_scrap(
 pub fn extract_timetable_from_html(
     html: String,
     app: &AppHandle,
-) -> Result<ScrapResult, ScrapError> {
+) -> Result<(ScrapResult, Vec<CourseInfo>), ScrapError> {
     log_to_front("Started processing HTML", LogLevel::Info, app, true);
     let mut results = ScrapResult {
         skipped_unknown_course_count: 0,
@@ -338,6 +338,10 @@ pub fn extract_timetable_from_html(
                                 datetime_string.push_str(&dt_str_sec);
                             }
                         }
+                        let instructor_vec = instructor
+                            .split("\n")
+                            .map(|s| s.trim().to_string())
+                            .collect::<Vec<_>>();
                         if datetime_string.contains("TBA") {
                             log_to_front(&format!("Table entry skipped for {}, meeting info not available", course_name), LogLevel::Warn, app, true);
                             results.skipped_table_entry_count += 1;
@@ -354,7 +358,7 @@ pub fn extract_timetable_from_html(
                                 entry_type: current_entry_type.clone(),
                                 class_section: current_section.clone(),
                                 location,
-                                instructor,
+                                instructors: instructor_vec,
                                 start_datetime: start,
                                 end_datetime: end,
                             })
@@ -372,5 +376,5 @@ pub fn extract_timetable_from_html(
         })
         .collect::<Vec<_>>();
 
-    Ok(results)
+    Ok((results, course_info))
 }

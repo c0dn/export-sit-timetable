@@ -1,5 +1,7 @@
 import {useLocation} from "@solidjs/router";
 import {JSX} from "solid-js";
+import {message, save} from '@tauri-apps/plugin-dialog';
+import {invoke} from "@tauri-apps/api/core";
 
 export default function ShowResults() {
 
@@ -33,6 +35,25 @@ export default function ShowResults() {
         } else {
             return "";
         }
+    }
+
+    const handleExport = async () => {
+        const path = await save({
+            filters: [
+                {
+                    name: "ICalendar",
+                    extensions: ["ics"],
+                },
+            ],
+        });
+        try {
+            await invoke("export_to_ics", {path: path})
+            await message("Export complete", { title: 'Export success', kind: 'info' });
+        } catch (error) {
+            // @ts-ignore
+            await message(error, { title: 'Export error', kind: 'error' });
+        }
+
     }
 
 
@@ -99,16 +120,20 @@ export default function ShowResults() {
                                 </dd>
                             </div>
                         </dl>
-                        <button type="button"
-                                class="inline-flex items-center gap-x-2 rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                            Export ICS
-                            <svg class="-mr-0.5 h-5 w-5" fill="white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                 viewBox="0 0 576 512">
-                                {/*Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc*/}
-                                <path
-                                    d="M0 64C0 28.7 28.7 0 64 0L224 0l0 128c0 17.7 14.3 32 32 32l128 0 0 128-168 0c-13.3 0-24 10.7-24 24s10.7 24 24 24l168 0 0 112c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 64zM384 336l0-48 110.1 0-39-39c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l80 80c9.4 9.4 9.4 24.6 0 33.9l-80 80c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l39-39L384 336zm0-208l-128 0L256 0 384 128z"/>
-                            </svg>
-                        </button>
+                        {result ? (
+                            <button type="button"
+                                    onclick={handleExport}
+                                    class="inline-flex items-center gap-x-2 rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                                Export ICS
+                                <svg class="-mr-0.5 h-5 w-5" fill="white" aria-hidden="true"
+                                     xmlns="http://www.w3.org/2000/svg"
+                                     viewBox="0 0 576 512">
+                                    {/*Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc*/}
+                                    <path
+                                        d="M0 64C0 28.7 28.7 0 64 0L224 0l0 128c0 17.7 14.3 32 32 32l128 0 0 128-168 0c-13.3 0-24 10.7-24 24s10.7 24 24 24l168 0 0 112c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 64zM384 336l0-48 110.1 0-39-39c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l80 80c9.4 9.4 9.4 24.6 0 33.9l-80 80c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l39-39L384 336zm0-208l-128 0L256 0 384 128z"/>
+                                </svg>
+                            </button>
+                        ) : null}
                     </div>
                 </div>
 
