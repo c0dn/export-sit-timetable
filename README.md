@@ -10,6 +10,8 @@ This program scraps the in4SIT website for your timetable. Exporting it to an IC
 - Simple interface, easy to use
 - Great error handling, user will know if something went wrong during export
 
+![img.png](screenshots/main.png)
+![img.png](screenshots/result.png)
 ## Installation
 
 Use the binaries released for Windows or you can build it from source

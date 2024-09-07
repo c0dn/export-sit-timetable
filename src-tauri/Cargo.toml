@@ -1,6 +1,6 @@
 [package]
 name = "export-sit-timetable"
-version = "0.1.0"
+version = "1.0.0"
 description = "An app that exports timetable from the website"
 authors = ["William"]
 edition = "2021"
