@@ -21,7 +21,8 @@ Install nodeJS \
 Install Rust
 ```shell
 npm install
-npm run tauri build
+cargo install tauri-cli --version "^2.0.0-rc"
+cargo tauri build
 ```
 Executables can be found in /src-tauri/target/release
 
