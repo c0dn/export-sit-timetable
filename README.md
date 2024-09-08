@@ -1,8 +1,8 @@
 # Export SIT Timetables
 
 This program scraps the in4SIT website for your timetable. Exporting it to an ICS file which can then be imported to a calendar app. \
-The program starts a local chromium browser for the scrapping process and the resulting HTML is then parsed on device, your credentials are not sent to an external server. \
-App will will make a request to Github on start to check the latest release version to notify user of any avaialble updates.
+The program starts a local Chromium browser for the scrapping process, and the resulting HTML is then parsed on the device, credentials are not sent to an external server.  \
+App will make a request to GitHub on start to check the latest release version to notify user of any available updates.
 
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/c0dn/export-sit-timetable/total)
 
