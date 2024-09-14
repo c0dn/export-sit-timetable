@@ -40,5 +40,5 @@ I think the UI can be improved.
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0.
+This project is licensed under the GNU General Public License v3.0. \
 SIT Timetable exporter  Copyright (C) 2024  William Oon
