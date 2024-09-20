@@ -12,10 +12,10 @@ name = "export_sit_timetable_lib"
 crate-type = ["lib", "cdylib", "staticlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-rc.9", features = [] }
+tauri-build = { version = "2.0.0-rc.12", features = [] }
 
 [dependencies]
-tauri = { version = "2.0.0-rc.10", features = [] }
+tauri = { version = "2.0.0-rc.15", features = [] }
 tauri-plugin-shell = "2.0.0-rc.3"
 serde = { version = "1.0.210", features = ["derive"] }
 serde_json = "1.0.128"
@@ -24,6 +24,6 @@ chromiumoxide = {version = "0.7.0", default-features = false, features = ["tokio
 tokio = {version = "1.40.0"}
 chrono = {version = "0.4.38", features = ["serde"] }
 futures = "0.3.30"
-icalendar = "0.16.5"
-tauri-plugin-dialog = "2.0.0-rc.5"
+icalendar = "0.16.8"
+tauri-plugin-dialog = "2.0.0-rc.7"
 reqwest = {version = "0.12.7", features = ["rustls-tls", "http2", "brotli", "gzip", "deflate"], default-features = false}

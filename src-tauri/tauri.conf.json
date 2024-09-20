@@ -23,6 +23,11 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "windows": {
+      "certificateThumbprint": "02a07965c5c751a9c433b74585d2c45ea092b474",
+        "digestAlgorithm": "sha256",
+        "timestampUrl": "http://time.certum.pl"
+    },
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
