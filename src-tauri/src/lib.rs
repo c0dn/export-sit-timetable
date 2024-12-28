@@ -1,4 +1,6 @@
-use crate::handlers::{export_to_ics, get_installed_version, handle_credentials, is_update_available};
+use crate::handlers::{
+    export_to_ics, get_installed_version, handle_credentials, is_update_available,
+};
 use crate::models::CourseInfo;
 use tauri::Manager;
 use tokio::sync::Mutex;
@@ -31,9 +33,14 @@ pub fn run() {
             app.manage(Mutex::new(app_state));
             Ok(())
         })
-        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![handle_credentials, export_to_ics, get_installed_version, is_update_available])
+        .invoke_handler(tauri::generate_handler![
+            handle_credentials,
+            export_to_ics,
+            get_installed_version,
+            is_update_available
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

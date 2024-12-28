@@ -26,6 +26,8 @@ pub enum EntryType {
     Lab,
     Lecture,
     Workshop,
+    Lectorial,
+    Seminar,
     Unknown,
 }
 

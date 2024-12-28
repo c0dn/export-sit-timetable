@@ -302,6 +302,8 @@ pub fn extract_timetable_from_html(
                                         "Laboratory" => EntryType::Lab,
                                         "Lecture" => EntryType::Lecture,
                                         "Workshop" => EntryType::Workshop,
+                                        "Seminar" => EntryType::Seminar,
+                                        "Lectorial" => EntryType::Lectorial,
                                         _ => {
                                             let msg = format!("Encountered unknown entry type when parsing table: {}, no matches found", text);
                                             log_to_front(&msg, LogLevel::Warn, app, true);
