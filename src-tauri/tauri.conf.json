@@ -1,6 +1,6 @@
 {
   "productName": "Timetable exporter",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "identifier": "com.whyisthisneeded.app",
   "build": {
     "beforeDevCommand": "npm run dev",
