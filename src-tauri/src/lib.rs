@@ -20,7 +20,7 @@ impl AppState {
     fn new() -> Self {
         AppState {
             scrapped_info: vec![],
-            version_string: "1.0.0".to_string(),
+            version_string: "1.1.0".to_string(),
         }
     }
 }
