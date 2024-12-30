@@ -26,4 +26,4 @@ chrono = {version = "0.4.39", features = ["serde"] }
 futures = "0.3.31"
 icalendar = "0.16.10"
 tauri-plugin-dialog = "2.2.0"
-reqwest = {version = "0.12.11", features = ["rustls-tls", "http2", "brotli", "gzip", "deflate"], default-features = false}
+reqwest = {version = "0.12.11", features = ["deflate", "rustls-tls", "rustls-tls-webpki-roots", "gzip", "brotli", "zstd"], default-features = false}
